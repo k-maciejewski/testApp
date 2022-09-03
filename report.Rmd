@@ -1,0 +1,26 @@
+---
+title: "Yale Clinical Trials reporting"
+author: "Yale Center for Analytical Sciences"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    latex_engine: pdflatex
+params:
+    table: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, message = F)
+```
+
+```{r}
+table <- params$table
+
+# table <- vroom::vroom(here::here('dashboard_selectors2.csv')) %>%
+#     janitor::clean_names() %>% 
+#     head()
+
+x <- as.tibble(table) 
+
+knitr::kable(x[,1:5])
+```

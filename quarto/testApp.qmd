@@ -1,0 +1,57 @@
+---
+title: "testApp"
+format: html
+server: shiny
+---
+
+## Quarto shiny app test
+
+Load a .csv file then download a pdf of the first 10 rows
+
+```{r}
+#### Data load UI and server ####
+#| context: ui
+downloadLink("report", "Pdf report")
+
+fileInput(
+  inputId = "file",
+  label = "Upload csv file",
+  multiple = FALSE,
+  accept = c(".csv"),
+  width = NULL,
+  buttonLabel = "Browse...",
+  placeholder = "No file selected"
+)
+
+tableOutput('table')
+```
+
+```{r}
+#| context: server
+library(tidyverse)
+
+table2 <- reactive({
+  req(input$file)
+  
+  vroom::vroom(here::here(input$file$datapath)) %>%
+    janitor::clean_names() %>% 
+    head()
+})
+
+output$table <- renderTable({
+  table2()
+  })
+
+output$report <- downloadHandler(
+      filename = "report.pdf",
+      content = function(file) {
+        tempReport <- file.path(tempdir(), "report.qmd")
+        file.copy("report.qmd", tempReport, overwrite = TRUE)
+        quarto::quarto_render(
+          input = tempReport,
+          output_file = file,
+          execute_params = list(table = table2()),
+        )
+      }
+    )
+```
